@@ -1,0 +1,150 @@
+{
+  "cells": [
+    {
+      "cell_type": "code",
+      "source": [
+        "pip! install pandas scikit-learn"
+      ],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "from sklearn.linear_model import LinearRegression\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.metrics import r2_score"
+      ],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Sample dataset: Study hours, previous exam scores, and pass/fail labels\n",
+        "data = {\n",
+        "    'StudyHours': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],\n",
+        "    'PrevExamScore': [30, 40, 45, 50, 60, 65, 70, 75, 80, 85],\n",
+        "    'Pass': [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]  # 0 = Fail, 1 = Pass\n",
+        "}\n",
+        "\n",
+        "df = pd.DataFrame(data)\n",
+        "\n",
+        "# Features and target variable\n",
+        "X = df[['StudyHours', 'PrevExamScore']]\n",
+        "y = df['Pass']"
+      ],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def forward_selection(X, y):\n",
+        "    remaining_features = set(X.columns)\n",
+        "    selected_features = []\n",
+        "    current_score = 0.0\n",
+        "    best_score = 0.0\n",
+        "    \n",
+        "    while remaining_features:\n",
+        "        scores_with_candidates = []\n",
+        "        \n",
+        "        # Loop through remaining features\n",
+        "        for feature in remaining_features:\n",
+        "            features_to_test = selected_features + [feature]\n",
+        "            X_train, X_test, y_train, y_test = train_test_split(X[features_to_test], y, test_size=0.2, random_state=42)\n",
+        "            \n",
+        "            # Train the model\n",
+        "            model = LinearRegression()\n",
+        "            model.fit(X_train, y_train)\n",
+        "            \n",
+        "            # Make predictions and calculate R-squared\n",
+        "            y_pred = model.predict(X_test)\n",
+        "            score = r2_score(y_test, y_pred)\n",
+        "            \n",
+        "            # Record the score with the current feature\n",
+        "            scores_with_candidates.append((score, feature))\n",
+        "        \n",
+        "        # Sort candidates by score (highest score first)\n",
+        "        scores_with_candidates.sort(reverse=True)\n",
+        "        best_score, best_feature = scores_with_candidates[0]\n",
+        "        \n",
+        "        # If adding the feature improves the score, add it to the model\n",
+        "        if current_score < best_score:\n",
+        "            remaining_features.remove(best_feature)\n",
+        "            selected_features.append(best_feature)\n",
+        "            current_score = best_score\n",
+        "        else:\n",
+        "            break\n",
+        "    \n",
+        "    return selected_features\n",
+        "\n",
+        "# Run forward selection\n",
+        "best_features = forward_selection(X, y)\n",
+        "print(\"Selected features using Forward Selection:\", best_features)"
+      ],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {}
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Explaining the process\n",
+        "How forward selection works\n",
+        "\n",
+        "Initialize with no features: The process begins with an empty set of features.\n",
+        "\n",
+        "Evaluate each feature: At each iteration, the model is trained with one additional feature at a time, and the R-squared value is calculated.\n",
+        "\n",
+        "Add the best feature: The feature that provides the highest improvement in R-squared is added to the model.\n",
+        "\n",
+        "Repeat: The process repeats by adding the next best feature until no further improvement can be made.\n",
+        "\n",
+        "Metrics used\n",
+        "\n",
+        "R-squared (coefficient of determination): This metric shows how much of the variance in the target variable is explained by the features. The higher the R-squared, the better the model explains the data."
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3.10 - SDK v2",
+      "language": "python",
+      "name": "python310-sdkv2"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.10.6"
+    },
+    "microsoft": {
+      "ms_spell_check": {
+        "ms_spell_check_language": "en"
+      }
+    },
+    "nteract": {
+      "version": "nteract-front-end@1.0.0"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 2
+}

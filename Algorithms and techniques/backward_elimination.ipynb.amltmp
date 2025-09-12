@@ -1,0 +1,112 @@
+{
+  "cells": [
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "\n",
+        "# Sample dataset\n",
+        "data = {\n",
+        "    'StudyHours': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],\n",
+        "    'PrevExamScore': [30, 40, 45, 50, 60, 65, 70, 75, 80, 85],\n",
+        "    'Pass': [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]  # 0 = Fail, 1 = Pass\n",
+        "}\n",
+        "\n",
+        "df = pd.DataFrame(data)\n",
+        "\n",
+        "# Features and target variable\n",
+        "X = df[['StudyHours', 'PrevExamScore']]\n",
+        "y = df['Pass']"
+      ],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import statsmodels.api as sm\n",
+        "\n",
+        "# Add a constant (for the intercept)\n",
+        "X = sm.add_constant(X)"
+      ],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Fit the model using OLS regression\n",
+        "model = sm.OLS(y, X).fit()\n",
+        "\n",
+        "# Display the model summary (including p-values)\n",
+        "print(model.summary())"
+      ],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {}
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Set a significance level\n",
+        "significance_level = 0.05\n",
+        "\n",
+        "# Perform backward elimination\n",
+        "while True:\n",
+        "    # Fit the model\n",
+        "    model = sm.OLS(y, X).fit()\n",
+        "    \n",
+        "    # Get the highest p-value in the model\n",
+        "    max_p_value = model.pvalues.max()\n",
+        "    \n",
+        "    # Check if the highest p-value is greater than the significance level\n",
+        "    if max_p_value > significance_level:\n",
+        "        # Identify the feature with the highest p-value\n",
+        "        feature_to_remove = model.pvalues.idxmax()\n",
+        "        print(f\"Removing feature: {feature_to_remove} with p-value: {max_p_value}\")\n",
+        "        \n",
+        "        # Drop the feature\n",
+        "        X = X.drop(columns=[feature_to_remove])\n",
+        "    else:\n",
+        "        break\n",
+        "\n",
+        "# Display the final model summary\n",
+        "print(model.summary())"
+      ],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {}
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3.10 - SDK v2",
+      "language": "python",
+      "name": "python310-sdkv2"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.10.6"
+    },
+    "microsoft": {
+      "ms_spell_check": {
+        "ms_spell_check_language": "en"
+      }
+    },
+    "nteract": {
+      "version": "nteract-front-end@1.0.0"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 2
+}
